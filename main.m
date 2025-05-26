@@ -39,7 +39,7 @@ thetaPara = struct('Ecoli', 0.65);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%
-parfor runIdx = 1:cntTimes
+for runIdx = 1:cntTimes
 % parfor runIdx = 1:cntTimes
     baseCls = members(:,bcIdx(runIdx,:));
     [bcs, baseClsSegs] = getAllSegs(baseCls);
@@ -47,23 +47,27 @@ parfor runIdx = 1:cntTimes
 
     %%
     NWCA = computeNWCA(baseClsSegs, computeNECI(bcs, baseClsSegs, NWCApara.(dataName)), M);
-    HC = CA;
-    HC(HC < etaPara.(dataName)) = 0;
-    L = diag(sum(HC)) - HC;
-
-    %%
-    MLA = CA;
-    MLA(MLA < thetaPara.(dataName)) = 0;
-
-    %%
-    ML = computeS(NWCA, MLA);
-    CL = computeD(bcs, baseClsSegs);
-    ML(CL > 0) = 0;
-    [S, D] = OptimizeSDGCA(L, ML, CL);
-    W = computeW(S,D,NWCA);
-
-    %%
-    result = getClsResult(W,clsNums);
+    if (etaPara.(dataName) > 1)
+        result = getClsResult(NWCA,clsNums);
+    else
+        HC = CA;
+        HC(HC < etaPara.(dataName)) = 0;
+        L = diag(sum(HC)) - HC;
+    
+        %%
+        MLA = CA;
+        MLA(MLA < thetaPara.(dataName)) = 0;
+    
+        %%
+        ML = computeS(NWCA, MLA);
+        CL = computeD(bcs, baseClsSegs);
+        ML(CL > 0) = 0;
+        [S, D] = OptimizeSDGCA(L, ML, CL);
+        W = computeW(S,D,NWCA);
+    
+        %%
+        result = getClsResult(W,clsNums);
+    end
     if (min(result) == 0)
         result = result + 1;
     end
